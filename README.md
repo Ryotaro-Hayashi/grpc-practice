@@ -28,3 +28,5 @@
 #### 実装
 - protoファイルにデータの構造やサービスを定義
 - protoc（コンパイラ）で、シリアライズなどを含むデータアクセスするためのコードを好きな言語で自動生成
+  - Protocol Buffersのメッセージやシリアライズに protocolbuffers/protobuf-go のprotoc-gen-go
+  - gPRCのサーバ/クライアントに grpc/grpc-goのprotoc-gen-go-grpc、と両方を使うことになった
