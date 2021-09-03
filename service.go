@@ -2,6 +2,7 @@ package grpc_practice
 
 import (
 	"context"
+	"time"
 
 	"github.com/Ryotaro-Hayashi/grpc-practice/pb"
 )
@@ -16,7 +17,22 @@ type Server struct {
 var _ pb.ComputeServer = &Server{}
 
 func (s *Server) Boot(req *pb.BootRequest, stream pb.Compute_BootServer) error {
-	panic("not implemented") // TODO: Implement
+	// 無限ループ
+	for {
+		select {
+		// クライアントがリクエストをキャンセルしたら終わり
+		case <-stream.Context().Done():
+			return nil
+		// 1秒待機してデータを送信
+		case <-time.After(1 * time.Second):
+		}
+
+		if err := stream.Send(&pb.BootResponse{
+			Message: "I THINK THEREFORE I AM.",
+		}); err != nil {
+			return err
+		}
+	}
 }
 
 func (s *Server) Infer(ctx context.Context, req *pb.InferRequest) (*pb.InferResponse, error) {
