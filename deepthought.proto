@@ -3,7 +3,7 @@ syntax = "proto3";
 // package指定は必須. HTTP/2のヘッダの一部として使われるらしい.
 package deepthought;
 
-option go_package = "github.com/Ryotaro-Hayashi/grpc-practice";
+option go_package = "github.com/Ryotaro-Hayashi/grpc-practice;pb";
 
 message BootRequest {}
 
