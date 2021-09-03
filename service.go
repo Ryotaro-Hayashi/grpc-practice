@@ -4,6 +4,9 @@ import (
 	"context"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	"github.com/Ryotaro-Hayashi/grpc-practice/pb"
 )
 
@@ -36,5 +39,26 @@ func (s *Server) Boot(req *pb.BootRequest, stream pb.Compute_BootServer) error {
 }
 
 func (s *Server) Infer(ctx context.Context, req *pb.InferRequest) (*pb.InferResponse, error) {
-	panic("not implemented") // TODO: Implement
+	// validation
+	switch req.Query {
+	case "Life", "Universe", "Everything":
+	default:
+		// gRPC は共通で使われるエラーコードを定めているので、基本は定義済みのコードを使う
+		// https://grpc.github.io/grpc/core/md_doc_statuscodes.html
+		return nil, status.Error(codes.InvalidArgument, "Contemplate your query")
+	}
+
+	// クライアントがタイムアウトを指定しているかチェック
+	deadline, ok := ctx.Deadline()
+	// 指定されていない、もしくは十分な時間があれば回答
+	if !ok || time.Until(deadline) > 750*time.Millisecond {
+		time.Sleep(750 * time.Millisecond)
+		return &pb.InferResponse{
+			Answer:      42,
+			Description: []string{"I checked it"},
+		}, nil
+	}
+
+	// 時間が足りなければ DEADLINE_EXCEEDED (code 4) エラーを返す
+	return nil, status.Error(codes.DeadlineExceeded, "It would take longer")
 }
