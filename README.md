@@ -1,5 +1,7 @@
 # grpc-practice
 
+## gRPC
+
 ### RFC（Remote Procedure Call）とは
 - 外部のプログラムが提供するProcedureを呼び出す仕組み
 - 異なる言語間でRFCとして呼び出す関数を定義するために、特定の言語に依らない定義方法（IDL：Interface Description Language）が必要になる
@@ -30,3 +32,59 @@
 - protoc（コンパイラ）で、シリアライズなどを含むデータアクセスするためのコードを好きな言語で自動生成
   - Protocol Buffersのメッセージやシリアライズに protocolbuffers/protobuf-go のprotoc-gen-go
   - gPRCのサーバ/クライアントに grpc/grpc-goのprotoc-gen-go-grpc
+
+
+## 並行処理
+
+### goroutineについて
+golangのプログラムで並行に実行されるもの
+
+関数やメソッドの呼び出しの前にgoを付けると、異なるgoroutineで関数を実行することができる
+
+runtime.NumGroutine()で現在起動しているgoroutineの数を取得できる
+
+メインgoroutineが終わったら他のgoroutineの終了を待たずにプログラム全体が終わる.
+これを防ぐために以下の2つの方法がある.
+- sync.WaitGroupを使う
+- channelを使う
+
+### channelについて
+channelを使うことで異なるgoroutine間で連携できる
+
+channelとgoroutineを使うことで、「何かデータを受信するまで待って、受信したら処理を開始する」というような処理を簡単に実装できる
+
+```
+ch := make(chan [型])
+ch := make(chan [型], バッファサイズ)
+```
+
+```
+ch := make(chan<- 型) // 読み込み専用
+ch := make(<-chan 型) // 書き込み専用
+```
+
+
+```
+ch <- data // 送信
+var := <-ch // 受信
+```
+
+受信側では受信可能なデータが来るまでブロック（goroutineが停止）される
+
+送信側はchannelがいっぱいの場合、空きができるまでブロックされる
+
+channelはデータを書き込む送信側と受け取る受信側が存在していないとエラーになる
+
+channelはcloseすることでデータを読み込むことを
+
+```
+select {
+case num := <-gen1:  // gen1から受信できるとき
+	fmt.Println(num)
+case channel<-1: // channelに送信できるとき
+	fmt.Println("write channel to 1")
+default:  // どっちも受信できないとき
+	fmt.Println("neither chan cannot use")
+}
+```
+複数のcaseが成り立つときはどちらかがランダムで選ばれる
